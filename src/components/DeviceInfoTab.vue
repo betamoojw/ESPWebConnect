@@ -19,57 +19,63 @@
 
           <v-row class="device-metrics" dense>
             <v-col cols="12" sm="4">
-              <div class="metric-card">
-                <v-icon class="metric-icon" size="22">mdi-memory</v-icon>
-                <div class="metric-label">Flash Size</div>
-                <div class="metric-value">{{ chipDetails.flashSize || 'Unknown' }}</div>
-                <div v-if="chipDetails.crystal" class="metric-caption">
-                  Crystal {{ chipDetails.crystal }}
-                </div>
-              </div>
+              <v-card class="metric-card" elevation="0" variant="tonal">
+                <v-card-text class="metric-card__body">
+                  <v-icon class="metric-icon" size="22">mdi-memory</v-icon>
+                  <div class="metric-label">Flash Size</div>
+                  <div class="metric-value">{{ chipDetails.flashSize || 'Unknown' }}</div>
+                  <div v-if="chipDetails.crystal" class="metric-caption">
+                    Crystal {{ chipDetails.crystal }}
+                  </div>
+                </v-card-text>
+              </v-card>
             </v-col>
             <v-col cols="12" sm="4">
-              <div class="metric-card metric-card--features">
-                <v-icon class="metric-icon" size="22">mdi-tune-variant</v-icon>
-                <div class="metric-label">Feature Set</div>
-                <div class="metric-value">
-                  {{ chipDetails.features?.length ? `${chipDetails.features.length} enabled` : 'Not reported' }}
-                </div>
-                <div
-                  v-if="chipDetails.features?.length"
-                  class="metric-caption"
-                >
-                  Reported capabilities
-                </div>
-                <v-chip-group
-                  v-if="chipDetails.features?.length"
-                  column
-                  class="feature-chip-group metric-chip-group"
-                >
-                  <v-chip
-                    v-for="feature in chipDetails.features"
-                    :key="feature"
-                    class="feature-chip"
-                    color="primary"
-                    variant="elevated"
-                    size="small"
+              <v-card class="metric-card metric-card--features" elevation="0" variant="tonal">
+                <v-card-text class="metric-card__body">
+                  <v-icon class="metric-icon" size="22">mdi-tune-variant</v-icon>
+                  <div class="metric-label">Feature Set</div>
+                  <div class="metric-value">
+                    {{ chipDetails.features?.length ? `${chipDetails.features.length} enabled` : 'Not reported' }}
+                  </div>
+                  <div
+                    v-if="chipDetails.features?.length"
+                    class="metric-caption"
                   >
-                    <v-icon size="16" start>mdi-check-circle</v-icon>
-                    {{ feature }}
-                  </v-chip>
-                </v-chip-group>
-                <div v-else class="metric-chip-placeholder">
-                  <v-chip size="small" variant="outlined">Not reported</v-chip>
-                </div>
-              </div>
+                    Reported capabilities
+                  </div>
+                  <v-chip-group
+                    v-if="chipDetails.features?.length"
+                    column
+                    class="feature-chip-group metric-chip-group"
+                  >
+                    <v-chip
+                      v-for="feature in chipDetails.features"
+                      :key="feature"
+                      class="feature-chip"
+                      color="primary"
+                      variant="elevated"
+                      size="small"
+                    >
+                      <v-icon size="16" start>mdi-check-circle</v-icon>
+                      {{ feature }}
+                    </v-chip>
+                  </v-chip-group>
+                  <div v-else class="metric-chip-placeholder">
+                    <v-chip size="small" variant="outlined">Not reported</v-chip>
+                  </div>
+                </v-card-text>
+              </v-card>
             </v-col>
             <v-col cols="12" sm="4">
-              <div class="metric-card">
-                <v-icon class="metric-icon" size="22">mdi-information-slab-circle</v-icon>
-                <div class="metric-label">Status</div>
-                <div class="metric-value">Ready</div>
-                <div class="metric-caption">Device details retrieved</div>
-              </div>
+              <v-card class="metric-card" elevation="0" variant="tonal">
+                <v-card-text class="metric-card__body">
+                  <v-icon class="metric-icon" size="22">mdi-information-slab-circle</v-icon>
+                  <div class="metric-label">Status</div>
+                  <div class="metric-value">Ready</div>
+                  <div class="metric-caption">Device details retrieved</div>
+                </v-card-text>
+              </v-card>
             </v-col>
           </v-row>
 
@@ -191,13 +197,16 @@ defineProps({
 
 .metric-card {
   border-radius: 16px;
-  padding: 16px;
-  background: color-mix(in srgb, var(--v-theme-surface) 88%, transparent);
+  background: color-mix(in srgb, var(--v-theme-surface) 88%, transparent) !important;
   border: 1px solid color-mix(in srgb, var(--v-theme-on-surface) 12%, transparent);
-  min-height: 140px;
+}
+
+.metric-card__body {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-height: 140px;
+  padding: 16px;
 }
 
 .metric-icon {
@@ -222,7 +231,7 @@ defineProps({
   color: color-mix(in srgb, var(--v-theme-on-surface) 55%, transparent);
 }
 
-.metric-card--features {
+.metric-card--features .metric-card__body {
   gap: 10px;
 }
 
