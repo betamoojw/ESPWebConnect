@@ -2922,21 +2922,31 @@ async function handleDeploySpiffsAgent() {
     clearSpiffsAgentDecoder();
     const { entry, segments } = parseSpiffsAgentBinary(spiffsAgent.binary);
     const blockSize = loader.value?.ESP_RAM_BLOCK || 0x1800;
-    for (const segment of segments) {
-      const { address, data } = segment;
-      const length = data.length;
-      const blocks = Math.ceil(length / blockSize);
-      // eslint-disable-next-line no-await-in-loop
-      await loader.value.memBegin(length, blocks, blockSize, address);
-      for (let seq = 0; seq < blocks; seq += 1) {
-        const start = seq * blockSize;
-        const end = Math.min(start + blockSize, length);
-        // eslint-disable-next-line no-await-in-loop
-        await loader.value.memBlock(data.slice(start, end), seq);
-      }
+    const loaderInstance = loader.value;
+    if (!loaderInstance) {
+      throw new Error('Loader unavailable.');
     }
-    spiffsAgent.status = 'Starting stub...';
-    await loader.value.memFinish(entry);
+    const previousStubState = loaderInstance.IS_STUB;
+    loaderInstance.IS_STUB = false;
+    try {
+      for (const segment of segments) {
+        const { address, data } = segment;
+        const length = data.length;
+        const blocks = Math.ceil(length / blockSize);
+        // eslint-disable-next-line no-await-in-loop
+        await loaderInstance.memBegin(length, blocks, blockSize, address);
+        for (let seq = 0; seq < blocks; seq += 1) {
+          const start = seq * blockSize;
+          const end = Math.min(start + blockSize, length);
+          // eslint-disable-next-line no-await-in-loop
+          await loaderInstance.memBlock(data.slice(start, end), seq);
+        }
+      }
+      spiffsAgent.status = 'Starting stub...';
+      await loaderInstance.memFinish(entry);
+    } finally {
+      loaderInstance.IS_STUB = previousStubState;
+    }
     spiffsAgent.running = true;
     spiffsAgent.files = [];
     spiffsAgent.status = 'Waiting for agent response...';
