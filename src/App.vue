@@ -8,15 +8,22 @@
       width="260"
       elevation="1"
     >
-      <v-sheet class="app-drawer__header" color="surface-variant" rounded="lg">
-        <div class="app-drawer__title text-h6 font-weight-semibold">
-          {{ APP_NAME }}
+      <v-sheet class="app-drawer__hero" color="transparent" elevation="3">
+        <div class="app-drawer__hero-icon">
+          <v-avatar color="primary" variant="tonal" size="52">
+            <v-icon size="30">mdi-transit-connection-variant</v-icon>
+          </v-avatar>
         </div>
-        <div class="app-drawer__version text-body-2 text-medium-emphasis">
-          v{{ APP_VERSION }}
-        </div>
-        <div class="app-drawer__tagline text-body-2 text-medium-emphasis">
-          {{ APP_TAGLINE }}
+        <div class="app-drawer__hero-body">
+          <div class="app-drawer__hero-header">
+            <span class="app-drawer__name">{{ APP_NAME }}</span>
+            <v-chip size="small" color="primary" class="app-drawer__chip" label>
+              v{{ APP_VERSION }}
+            </v-chip>
+          </div>
+          <p class="app-drawer__tagline text-body-2">
+            {{ APP_TAGLINE }}
+          </p>
         </div>
       </v-sheet>
       <v-list nav density="comfortable" class="app-drawer__list">
@@ -331,6 +338,7 @@ import SessionLogTab from './components/SessionLogTab.vue';
 import SerialMonitorTab from './components/SerialMonitorTab.vue';
 import registerGuides from './data/register-guides.json';
 
+const APP_NAME = 'ESPConnect';
 const APP_VERSION = '0.1';
 const APP_TAGLINE = 'Flash, back up, and troubleshoot your ESP32 straight from the browser.';
 
@@ -890,7 +898,6 @@ const firmwareName = ref('');
 const chipDetails = ref(null);
 const partitionTable = ref([]);
 const activeTab = ref('info');
-const APP_NAME = 'ESPConnect';
 const navigationItems = [
   { title: 'Device Info', value: 'info', icon: 'mdi-information-outline' },
   { title: 'Partitions', value: 'partitions', icon: 'mdi-table' },
@@ -3492,12 +3499,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.app-title {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 8px;
-}
-
 .status-bar {
   border-radius: 12px;
   padding-inline: 12px;
@@ -3556,7 +3557,12 @@ onBeforeUnmount(() => {
 }
 
 .app-drawer {
-  border-right: 1px solid color-mix(in srgb, var(--v-theme-primary) 12%, transparent);
+  border-right: 1px solid color-mix(in srgb, var(--v-theme-primary) 10%, transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--v-theme-surface) 88%, #000000 12%) 0%,
+    color-mix(in srgb, var(--v-theme-surface) 70%, #020202 30%) 100%
+  );
 }
 
 .app-drawer :deep(.v-navigation-drawer__content) {
@@ -3565,30 +3571,124 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  overflow-y: auto;
 }
 
-.app-drawer__header {
-  padding: 20px;
-  border: 1px solid color-mix(in srgb, var(--v-theme-primary) 10%, transparent);
-  box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 40%, transparent);
+.app-drawer__hero {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 22px 20px;
+  border-radius: 22px;
+  backdrop-filter: blur(18px);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--v-theme-primary) 16%, transparent) 0%,
+    color-mix(in srgb, var(--v-theme-primary) 46%, #0b0b0f 34%) 100%
+  );
+  border: 1px solid color-mix(in srgb, var(--v-theme-primary) 25%, transparent);
+  box-shadow:
+    0 18px 32px rgba(15, 23, 42, 0.28),
+    inset 0 1px 0 color-mix(in srgb, #ffffff 40%, transparent);
 }
 
 .app-drawer__divider {
-  opacity: 0.1;
+  opacity: 0.15;
+  margin-inline: 12px;
+}
+
+.app-drawer__list {
+  background: color-mix(in srgb, var(--v-theme-surface) 82%, transparent);
+  border-radius: 18px;
+  padding: 4px;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 12%, transparent);
+}
+
+.app-drawer__hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle at 18% 12%,
+    color-mix(in srgb, var(--v-theme-primary) 60%, transparent) 0%,
+    transparent 55%
+  );
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.app-drawer__hero-icon {
+  z-index: 1;
 }
 
 .app-drawer__label {
   letter-spacing: 0.08em;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--v-theme-on-surface) 65%, transparent);
+}
+
+.app-drawer__hero-body {
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.app-drawer__hero-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-drawer__name {
+  font-size: 1.15rem;
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, var(--v-theme-on-surface) 94%, #ffffff 6%);
+}
+
+.app-drawer__chip {
+  font-weight: 600;
+  text-transform: none;
+  background-color: color-mix(in srgb, var(--v-theme-primary) 82%, #ffffff 18%) !important;
+  color: color-mix(in srgb, var(--v-theme-on-primary) 94%, #ffffff 6%) !important;
+  box-shadow: 0 4px 10px rgba(12, 74, 110, 0.35);
+}
+
+.app-drawer__chip :deep(.v-chip__content) {
+  padding-inline: 10px;
+}
+
+.app-drawer__tagline {
+  margin: 0;
+  line-height: 1.4;
+  color: color-mix(in srgb, var(--v-theme-on-surface) 70%, transparent);
+  max-width: 180px;
 }
 
 .app-drawer__list-item {
   font-weight: 500;
   text-transform: none;
+  transition: background-color 0.24s ease, transform 0.24s ease;
+  border-radius: 14px;
+}
+
+.app-drawer :deep(.v-list-item__prepend .v-icon) {
+  opacity: 0.92;
 }
 
 .app-drawer :deep(.v-list-item--active) {
-  background-color: color-mix(in srgb, var(--v-theme-primary) 16%, transparent);
-  color: var(--v-theme-primary);
+  background-color: color-mix(in srgb, var(--v-theme-primary) 28%, transparent);
+  color: color-mix(in srgb, var(--v-theme-primary) 88%, #ffffff 12%);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--v-theme-primary) 60%, transparent);
+}
+
+.app-drawer__list-item:hover {
+  transform: translateX(4px);
+  background-color: color-mix(in srgb, var(--v-theme-primary) 18%, transparent);
+  color: color-mix(in srgb, var(--v-theme-primary) 80%, #ffffff 20%);
 }
 
 </style>
