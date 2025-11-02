@@ -2978,21 +2978,16 @@ async function handleDeploySpiffsAgent() {
     spiffsAgent.running = true;
     spiffsStubStarted = true;
     spiffsAgent.files = [];
-    const availabilityNote = ' Flasher stub disabled until you disconnect and reconnect.';
-    spiffsAgent.status = 'Waiting for agent response...';
-    const readyLine = await readSpiffsAgentLine({ skipEmpty: true }).catch(() => null);
-    if (readyLine) {
-      spiffsAgent.status = readyLine + availabilityNote;
-      appendLog(`SPIFFS agent: ${readyLine}`, '[debug]');
-    } else {
-      spiffsAgent.status = 'Stub running. Ready for SPIFFS commands.' + availabilityNote;
-    }
+    spiffsAgent.status = 'SPIFFS agent running. Flasher stub disabled until you disconnect and reconnect.';
     spiffsAgentRuntime.buffer = '';
     appendLog('SPIFFS agent stub running. Use the controls below to manage SPIFFS.', '[debug]');
     appendLog(
       'Flasher stub disabled while SPIFFS agent is active. Disconnect & reconnect after finishing to restore flashing features.',
       '[warn]'
     );
+    queueMicrotask(() => {
+      handleListSpiffsFiles();
+    });
   } catch (error) {
     spiffsAgent.running = false;
     spiffsAgent.error = error?.message || String(error);
