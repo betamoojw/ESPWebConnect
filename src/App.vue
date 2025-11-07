@@ -162,6 +162,29 @@
           </v-card>
         </v-dialog>
 
+        <v-dialog :model-value="spiffsBackupDialog.visible" persistent max-width="420" class="progress-dialog">
+          <v-card>
+            <v-card-title class="text-h6">
+              <v-icon start color="primary">mdi-content-save</v-icon>
+              SPIFFS Backup
+            </v-card-title>
+            <v-card-text class="progress-dialog__body">
+              <div class="progress-dialog__label">
+                {{ spiffsBackupDialog.label || 'Preparing backup...' }}
+              </div>
+              <v-progress-linear :model-value="spiffsBackupDialog.value" height="24" color="primary" rounded>
+                <strong>{{ Math.min(100, Math.max(0, Math.floor(spiffsBackupDialog.value))) }}%</strong>
+              </v-progress-linear>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer />
+              <v-btn variant="text" @click="cancelSpiffsBackup">
+                Cancel
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+
         <v-dialog v-model="showBootDialog" width="420">
           <v-card>
             <v-card-title class="text-h6">
@@ -739,11 +762,19 @@ async function handleSpiffsBackup() {
     spiffsState.status = 'Connect to a device first.';
     return;
   }
+  spiffsBackupDialog.visible = true;
+  spiffsBackupDialog.value = 0;
+  spiffsBackupDialog.label = 'Preparing backup...';
   try {
     const label = sanitizeFileName(`${partition.label || 'spiffs'}_${partition.offset.toString(16)}`, 'spiffs');
     await downloadFlashRegion(partition.offset, partition.size, {
       label: `${partition.label} SPIFFS`,
       fileName: `${label}.bin`,
+      suppressStatus: true,
+      onProgress: progress => {
+        spiffsBackupDialog.value = progress.value ?? 0;
+        spiffsBackupDialog.label = progress.label || 'Backing up SPIFFS...';
+      },
     });
     spiffsState.backupDone = true;
     spiffsState.status = 'Backup downloaded. You can now save changes.';
@@ -751,6 +782,10 @@ async function handleSpiffsBackup() {
   } catch (error) {
     spiffsState.error = formatErrorMessage(error);
     spiffsState.status = 'SPIFFS backup failed.';
+  } finally {
+    spiffsBackupDialog.visible = false;
+    spiffsBackupDialog.value = 0;
+    spiffsBackupDialog.label = '';
   }
 }
 
@@ -799,6 +834,14 @@ async function handleSpiffsDownloadFile(name) {
   } catch (error) {
     spiffsState.error = formatErrorMessage(error);
   }
+}
+
+function cancelSpiffsBackup() {
+  if (!spiffsBackupDialog.visible) {
+    return;
+  }
+  spiffsBackupDialog.label = 'Stopping backup...';
+  handleCancelDownload();
 }
 
 async function handleSpiffsUpload({ file, name }) {
@@ -1124,6 +1167,11 @@ const spiffsState = reactive({
   backupDone: false,
   diagnostics: [],
   baselineFiles: [],
+});
+const spiffsBackupDialog = reactive({
+  visible: false,
+  value: 0,
+  label: '',
 });
 const spiffsPartitions = computed(() =>
   partitionTable.value
@@ -3151,7 +3199,7 @@ async function downloadFlashRegion(offset, length, options = {}) {
     throw new Error('Requested region exceeds detected flash size.');
   }
 
-  const { label, fileName, suppressStatus = false } = options;
+  const { label, fileName, suppressStatus = false, onProgress } = options;
   const offsetHex = '0x' + offset.toString(16).toUpperCase();
   const lengthHex = '0x' + length.toString(16).toUpperCase();
   const displayLabel = label || 'flash region (' + offsetHex + ' / ' + lengthHex + ')';
@@ -3226,6 +3274,14 @@ async function downloadFlashRegion(offset, length, options = {}) {
             downloadProgress.label = progressLabel;
             flashReadStatusType.value = 'info';
             flashReadStatus.value = progressLabel;
+          }
+          if (typeof onProgress === 'function') {
+            onProgress({
+              value: progressValue,
+              label: progressLabel,
+              written: overallReceived,
+              total: length,
+            });
           }
         }
       );
@@ -3305,6 +3361,14 @@ async function downloadFlashRegion(offset, length, options = {}) {
       ' bytes) @ ' +
       baudLabel +
       '.';
+  }
+  if (typeof onProgress === 'function') {
+    onProgress({
+      value: 100,
+      label: 'Download complete.',
+      written: length,
+      total: length,
+    });
   }
   appendLog(
     'Downloaded ' + displayLabel + ' to ' + finalName + ' @ ' + baudLabel + '.',
