@@ -96,7 +96,7 @@
             </v-window-item>
 
             <v-window-item value="littlefs">
-              <LittleFsPreview v-if="connected && littleFsAvailable" />
+              <LittleFsTools v-if="connected && littleFsAvailable" />
               <DisconnectedState v-else icon="mdi-alpha-l-circle-outline" :min-height="420"
                 subtitle="Connect to an ESP32 with a LittleFS partition to use these tools." />
             </v-window-item>
@@ -356,7 +356,7 @@ import DeviceInfoTab from './components/DeviceInfoTab.vue';
 import FlashFirmwareTab from './components/FlashFirmwareTab.vue';
 import AppsTab from './components/AppsTab.vue';
 import SpiffsManagerTab from './components/SpiffsManagerTab.vue';
-import LittleFsPreview from './components/LittleFsPreview.vue';
+import LittleFsTools from './components/LittleFsTools.vue';
 import PartitionsTab from './components/PartitionsTab.vue';
 import SessionLogTab from './components/SessionLogTab.vue';
 import SerialMonitorTab from './components/SerialMonitorTab.vue';
