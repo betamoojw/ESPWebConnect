@@ -299,6 +299,25 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
+
+        <v-dialog :model-value="spiffsUploadErrorDialog.visible" max-width="480"
+          @update:model-value="value => { if (!value) spiffsUploadErrorDialog.visible = false; }">
+          <v-card>
+            <v-card-title class="text-h6">
+              <v-icon start color="error">mdi-alert-circle</v-icon>
+              Upload Failed
+            </v-card-title>
+            <v-card-text class="text-body-2">
+              {{ spiffsUploadErrorDialog.message || 'Not enough SPIFFS space to store this file.' }}
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer />
+              <v-btn color="primary" variant="text" @click="spiffsUploadErrorDialog.visible = false">
+                Close
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
       </v-container>
     </v-main>
   </v-app>
@@ -746,6 +765,8 @@ function resetSpiffsState() {
     freeBytes: 0,
   };
   closeSpiffsViewer();
+  spiffsUploadErrorDialog.visible = false;
+  spiffsUploadErrorDialog.message = '';
 }
 
 function updateSpiffsUsage() {
@@ -1091,8 +1112,16 @@ async function handleSpiffsUpload({ file }) {
     markSpiffsDirty(`Staged ${targetName}. Remember to Save.`);
     appendLog(`SPIFFS staged ${targetName} (${data.length.toLocaleString()} bytes).`, '[debug]');
   } catch (error) {
-    spiffsState.error = formatErrorMessage(error);
-    spiffsState.status = spiffsState.error || 'SPIFFS upload failed.';
+    const isSpaceError = typeof error?.message === 'string' && error.message.includes('Not enough SPIFFS space');
+    const friendly = isSpaceError
+      ? 'Not enough SPIFFS space for this file. Delete files or format the partition, then try again.'
+      : formatErrorMessage(error);
+    spiffsState.error = friendly;
+    spiffsState.status = friendly || 'SPIFFS upload failed.';
+    if (isSpaceError) {
+      spiffsUploadErrorDialog.message = friendly;
+      spiffsUploadErrorDialog.visible = true;
+    }
   } finally {
     spiffsState.busy = false;
   }
@@ -1442,6 +1471,10 @@ const spiffsViewerDialog = reactive({
   loading: false,
   mode: null,
   imageUrl: '',
+});
+const spiffsUploadErrorDialog = reactive({
+  visible: false,
+  message: '',
 });
 const spiffsPartitions = computed(() =>
   partitionTable.value
