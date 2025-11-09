@@ -1,5 +1,5 @@
 <template>
-  <div class="about-tab">
+  <div :class="['about-tab', isDark ? 'about-tab--dark' : 'about-tab--light']">
     <v-card variant="tonal" class="mb-4">
       <v-card-title class="text-h6 d-flex align-center ga-2">
         <v-icon color="primary">mdi-chip</v-icon>
@@ -71,6 +71,11 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
+import { useTheme } from 'vuetify';
+
+const theme = useTheme();
+const isDark = computed(() => theme.global.current.value.dark);
 </script>
 
 <style scoped>
@@ -78,6 +83,20 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  padding: 24px;
+  border-radius: 16px;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  min-height: 100%;
+}
+
+.about-tab--light {
+  background-image: url('/assets/images/about_back_light.png');
+}
+
+.about-tab--dark {
+  background-image: url('/assets/images/about_back_dark.png');
 }
 
 .about-list {
