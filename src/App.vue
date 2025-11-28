@@ -568,67 +568,29 @@ import { createConnection, requestSerialPort } from './services/connectionServic
 import { useFatfsManager, useLittlefsManager, useSpiffsManager } from './composables/useFilesystemManagers';
 import { useDialogs } from './composables/useDialogs';
 import { readPartitionTable } from './utils/partitions';
+import {
+  SPIFFS_AUDIO_EXTENSIONS,
+  SPIFFS_AUDIO_MIME_MAP,
+  SPIFFS_IMAGE_EXTENSIONS,
+  SPIFFS_IMAGE_MIME_MAP,
+  SPIFFS_MAX_FILENAME_LENGTH,
+  SPIFFS_TEXT_EXTENSIONS,
+  SPIFFS_VIEWER_DECODER,
+  SPIFFS_VIEWER_MAX_BYTES,
+  LITTLEFS_DEFAULT_BLOCK_SIZE,
+  LITTLEFS_BLOCK_SIZE_CANDIDATES,
+  FATFS_DEFAULT_BLOCK_SIZE,
+} from './constants/filesystems';
+import {
+  DEBUG_SERIAL,
+  DEFAULT_FLASH_BAUD,
+  DEFAULT_ROM_BAUD,
+  MONITOR_BAUD,
+  SUPPORTED_VENDORS,
+  TIMEOUT_CONNECT,
+} from './constants/serial';
 
 const APP_VERSION = '1.03';
-const TIMEOUT_CONNECT = 1000;
-const SUPPORTED_VENDORS = [
-  { usbVendorId: 0x303a },
-  { usbVendorId: 0x1a86 },
-  { usbVendorId: 0x10c4 },
-  { usbVendorId: 0x0403 },
-];
-
-const DEFAULT_ROM_BAUD = 115200;
-const DEFAULT_FLASH_BAUD = 921600;
-const MONITOR_BAUD = 115200;
-const DEBUG_SERIAL = false;
-const SPIFFS_TEXT_EXTENSIONS = [
-  'txt',
-  'log',
-  'json',
-  'csv',
-  'ini',
-  'cfg',
-  'conf',
-  'htm',
-  'html',
-  'md',
-  'js',
-  'ts',
-  'css',
-  'xml',
-  'yaml',
-  'yml',
-];
-const SPIFFS_IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg'];
-const SPIFFS_IMAGE_MIME_MAP = {
-  png: 'image/png',
-  jpg: 'image/jpeg',
-  jpeg: 'image/jpeg',
-  gif: 'image/gif',
-  bmp: 'image/bmp',
-  webp: 'image/webp',
-  svg: 'image/svg+xml',
-};
-const SPIFFS_AUDIO_EXTENSIONS = ['mp3', 'wav', 'ogg', 'oga', 'opus', 'm4a', 'aac', 'flac', 'weba', 'webm'];
-const SPIFFS_AUDIO_MIME_MAP = {
-  mp3: 'audio/mpeg',
-  wav: 'audio/wav',
-  ogg: 'audio/ogg',
-  oga: 'audio/ogg',
-  opus: 'audio/ogg; codecs=opus',
-  m4a: 'audio/mp4',
-  aac: 'audio/aac',
-  flac: 'audio/flac',
-  weba: 'audio/webm',
-  webm: 'audio/webm',
-};
-const SPIFFS_VIEWER_MAX_BYTES = 2 * 1024 * 1024; // 2 MB previews
-const SPIFFS_VIEWER_DECODER = new TextDecoder('utf-8', { fatal: false, ignoreBOM: true });
-const SPIFFS_MAX_FILENAME_LENGTH = 31; // Default ESP32 SPIFFS objNameLength (32) minus null terminator
-const LITTLEFS_DEFAULT_BLOCK_SIZE = 4096;
-const LITTLEFS_BLOCK_SIZE_CANDIDATES = [4096, 2048, 1024, 512];
-const FATFS_DEFAULT_BLOCK_SIZE = 512;
 const APP_BASE_URL = (import.meta.env?.BASE_URL ?? '/').replace(/\/+$/, '/') || '/';
 const LITTLEFS_WASM_ENTRY = `${APP_BASE_URL}wasm/littlefs/index.js`;
 const FATFS_WASM_ENTRY = `${APP_BASE_URL}wasm/fatfs/index.js`;
