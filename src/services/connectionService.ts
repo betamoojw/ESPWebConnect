@@ -1,5 +1,4 @@
-import { ESPLoader, Transport } from '../esptool_lib/index.js';
-import type { ESPLoader as EsptoolLoader, Transport as EsptoolTransport } from '../esptool_lib/index';
+import { createEsptoolClient } from './esptoolClient';
 
 export async function requestSerialPort(filters?: SerialPortFilter[]) {
   if (!navigator?.serial?.requestPort) {
@@ -14,13 +13,12 @@ export function createConnection(
   terminal: unknown,
   options: { debugSerial?: boolean; debugLogging?: boolean } = {},
 ) {
-  const transport: EsptoolTransport = new Transport(port, options.debugSerial ?? false);
-  transport.tracing = options.debugSerial ?? false;
-  const loader: EsptoolLoader = new ESPLoader({
-    transport,
-    baudrate,
+  const client = createEsptoolClient({
+    port,
     terminal,
-    debugLogging: options.debugLogging ?? false,
+    desiredBaud: baudrate,
+    debugSerial: options.debugSerial,
+    debugLogging: options.debugLogging,
   });
-  return { transport, loader };
+  return { transport: client.transport, loader: client.loader };
 }

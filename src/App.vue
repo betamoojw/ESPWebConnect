@@ -4984,7 +4984,7 @@ async function connect() {
       port: currentPort.value,
       terminal,
       desiredBaud,
-      debugSerial: DEBUG_SERIAL,
+      debugSerial: false,
       debugLogging: false,
       onStatus: msg => {
         connectDialog.message = msg;
@@ -5004,7 +5004,7 @@ async function connect() {
     }
 
     connectDialog.message = 'Handshaking with ROM bootloader...';
-    const { chipName, chip } = await esptool.connectAndHandshake();
+    const { chipName, chip, macAddress: handshakeMac } = await esptool.connectAndHandshake();
     currentBaud.value = desiredBaud || connectBaud;
     transport.value.baudrate = currentBaud.value;
     const previousSuspendState = suspendBaudWatcher;
@@ -5030,7 +5030,6 @@ async function connect() {
     const descriptionRaw = metadata.description ?? chipName;
     const featuresRaw = metadata.features;
     const crystalFreq = metadata.crystalFreq;
-    const macAddress = metadata.macAddress;
 
     connectDialog.message = `Reading Flash size...`;
     const flashLabel = await esptool.detectFlashSize();
@@ -5080,7 +5079,7 @@ async function connect() {
 
     const crystalLabel =
       typeof crystalFreq === 'number' ? `${Number(crystalFreq).toFixed(0)} MHz` : null;
-    const macLabel = macAddress || 'Unavailable';
+    const macLabel = handshakeMac ?? "unknown";
 
     const chipKey = chip?.CHIP_NAME || chipName;
     applyRegisterGuide(chipKey);
@@ -5099,6 +5098,9 @@ async function connect() {
     if (packageMatch) {
       const detail = PACKAGE_FORM_FACTORS[packageMatch[1]];
       pushFact('Package Form Factor', detail);
+    }
+    if (macLabel && macLabel !== 'Unavailable') {
+      pushFact('MAC Address', macLabel);
     }
     pushFact('Revision', resolveRevisionLabel(chipKey, chipRevision, majorVersion, minorVersion));
     pushFact('Flash Size', flashLabel);

@@ -12,6 +12,7 @@
     "@mdi/font": "^7.3.67",
     "atob-lite": "^2.0.0",
     "pako": "^2.1.0",
+    "tasmota-webserial-esptool": "^7.1.0",
     "vue": "^3.5.11",
     "vuetify": "^3.7.2"
   },
