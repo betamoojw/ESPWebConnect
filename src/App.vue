@@ -667,7 +667,7 @@ import {
   SUPPORTED_BAUDRATES,
   TIMEOUT_CONNECT,
 } from './constants/usb';
-import { FACT_DISPLAY_ORDER, FACT_GROUP_CONFIG, FACT_ICONS } from './constants/deviceFacts';
+import { FACT_GROUP_CONFIG, FACT_ICONS } from './constants/deviceFacts';
 import { findChipDocs } from './constants/chipDocsLinks';
 import { PWM_TABLE } from './utils/pwm-capabilities-table';
 
@@ -675,26 +675,26 @@ let littlefsModulePromise = null;
 let fatfsModulePromise = null;
 
 // Sort device facts using the preferred display order, then fall back to name sorting.
-function sortFacts(facts) {
-  return [...facts].sort((a, b) => {
-    const orderA = FACT_DISPLAY_ORDER.indexOf(a.label);
-    const orderB = FACT_DISPLAY_ORDER.indexOf(b.label);
-    const hasOrderA = orderA !== -1;
-    const hasOrderB = orderB !== -1;
+// function sortFacts(facts) {
+//   return [...facts].sort((a, b) => {
+//     const orderA = FACT_DISPLAY_ORDER.indexOf(a.label);
+//     const orderB = FACT_DISPLAY_ORDER.indexOf(b.label);
+//     const hasOrderA = orderA !== -1;
+//     const hasOrderB = orderB !== -1;
 
-    if (hasOrderA && hasOrderB) {
-      if (orderA !== orderB) {
-        return orderA - orderB;
-      }
-      return a.label.localeCompare(b.label);
-    }
+//     if (hasOrderA && hasOrderB) {
+//       if (orderA !== orderB) {
+//         return orderA - orderB;
+//       }
+//       return a.label.localeCompare(b.label);
+//     }
 
-    if (hasOrderA) return -1;
-    if (hasOrderB) return 1;
+//     if (hasOrderA) return -1;
+//     if (hasOrderB) return 1;
 
-    return a.label.localeCompare(b.label);
-  });
-}
+//     return a.label.localeCompare(b.label);
+//   });
+// }
 
 // Lazy-load and cache the LittleFS WASM module.
 async function loadLittlefsModule() {
@@ -5410,8 +5410,8 @@ async function connect() {
     pushFact('Connection Baud', `${currentBaud.value.toLocaleString()} bps`);
 
     const featuresDisplay = featureList.filter(Boolean).map(humanizeFeature);
-    const orderedFacts = sortFacts(facts);
-    const factGroups = buildFactGroups(orderedFacts);
+    // const orderedFacts = sortFacts(facts);
+    const factGroups = buildFactGroups(facts);
 
     chipDetails.value = {
       name: chipName,
@@ -5420,12 +5420,12 @@ async function connect() {
       mac: macLabel,
       flashSize: flashLabel,
       crystal: crystalLabel,
-      facts: orderedFacts,
+      facts: facts,
       factGroups,
     };
     activeTab.value = 'info';
     appendLog(
-      `Loaded device details: ${chipDetails.value.name}, ${orderedFacts.length} facts.`,
+      `Loaded device details: ${chipDetails.value.name}, ${facts.length} facts.`,
       '[ESPConnect-Debug]'
     );
 

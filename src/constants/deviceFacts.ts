@@ -15,28 +15,6 @@ export const FACT_ICONS: Record<string, string> = {
   'PWM/LEDC': 'mdi-waveform',
 };
 
-export const FACT_DISPLAY_ORDER = [
-  'Chip Variant',
-  'Package Form Factor',
-  'Revision',
-  'Embedded Flash',
-  'Embedded PSRAM',
-  'Flash ID',
-  'Flash Manufacturer',
-  'Flash Device',
-  'Flash Vendor (eFuse)',
-  'PSRAM Vendor (eFuse)',
-  'eFuse Block Version',
-  'Hardware Reference',
-  'Datasheet',
-  'Technical Reference Manual',
-  'Errata',
-  'Hardware Design Guidelines',
-  'PWM/LEDC',
-  'USB Bridge',
-  'Connection Baud',
-];
-
 export const FACT_GROUP_CONFIG = [
   {
     title: 'Package & Revision',
