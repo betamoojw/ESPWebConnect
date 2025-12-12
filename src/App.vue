@@ -613,7 +613,7 @@
   </v-app>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import { useTheme } from 'vuetify';
 import DeviceInfoTab from './components/DeviceInfoTab.vue';

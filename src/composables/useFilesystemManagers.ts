@@ -1,5 +1,15 @@
 import { reactive, ref } from 'vue';
 
+export type FatfsClient = {
+  list?: () => Array<{ name?: string; size?: number; path?: string; type?: string }>;
+  writeFile?: (path: string, data: any) => any;
+  deleteFile?: (path: string) => any;
+  format?: () => any;
+  toImage?: () => any;
+  readFile?: (path: string) => any;
+  read?: (path: string) => any;
+};
+
 export function useSpiffsManager() {
   const spiffsLoadCancelRequested = ref(false);
   const spiffsState = reactive({
@@ -103,7 +113,7 @@ export function useFatfsManager(defaultBlockSize: number) {
   const fatfsLoadCancelRequested = ref(false);
   const fatfsState = reactive({
     selectedId: null as number | null,
-    client: null as unknown,
+    client: null as FatfsClient | null,
     files: [] as Array<{ name?: string; size?: number }>,
     status: 'Load a FATFS partition to begin.',
     loading: false,
