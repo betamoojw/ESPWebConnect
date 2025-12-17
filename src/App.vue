@@ -920,7 +920,6 @@ async function loadLittlefsPartition(partition) {
   littlefsLoadingDialog.label = `Reading LittleFS${littlefsBaudLabel}...`;
   const attemptedConfigs = [];
   try {
-    await releaseTransportReader();
     const image = await readFlashToBuffer(partition.offset, partition.size, {
       label: `LittleFS${littlefsBaudLabel}`,
       cancelSignal: littlefsLoadCancelRequested,
@@ -1727,7 +1726,6 @@ async function loadFatfsPartition(partition) {
   fatfsLoadingDialog.visible = true;
   fatfsLoadingDialog.label = `Reading ${partition.label || 'FATFS'}${baudLabel}...`;
   try {
-    await releaseTransportReader();
     const image = await readFlashToBuffer(partition.offset, partition.size, {
       label: `${partition.label || 'FATFS'}${baudLabel}`,
       cancelSignal: fatfsLoadCancelRequested,
@@ -2574,7 +2572,6 @@ async function loadSpiffsPartition(partition) {
   spiffsLoadingDialog.visible = true;
   spiffsLoadingDialog.label = `Reading ${partition.label || 'SPIFFS'}${spiffsBaudLabel}...`;
   try {
-    await releaseTransportReader();
     const image = await readFlashToBuffer(partition.offset, partition.size, {
       label: `${partition.label || 'SPIFFS'}${spiffsBaudLabel}`,
       cancelSignal: spiffsLoadCancelRequested,
@@ -3238,7 +3235,6 @@ async function writeFilesystemImage(partition: any, image: Uint8Array, options: 
   if (!loader.value) {
     throw new Error('Loader unavailable.');
   }
-  await releaseTransportReader();
   await loader.value.flashData(
     toArrayBuffer(image),
     (written, total) => {
@@ -4925,26 +4921,6 @@ function serialPortsMatch(portA, portB) {
   return false;
 }
 
-// Cancel and release the current transport reader, if any.
-async function releaseTransportReader() {
-  const transportInstance = transport.value;
-  const reader = transportInstance?.reader;
-  if (!reader) {
-    return;
-  }
-  try {
-    await reader.cancel();
-  } catch (err) {
-    appendLog(`Monitor reader cancel failed: ${err?.message || err}`, '[ESPConnect-Debug]');
-  }
-  try {
-    reader.releaseLock?.();
-  } catch (err) {
-    appendLog(`Monitor reader release failed: ${err?.message || err}`, '[ESPConnect-Debug]');
-  }
-  transportInstance.reader = null;
-}
-
 // Decode monitor data chunks and buffer them for display while handling noise.
 function appendMonitorChunk(bytes) {
   if (!bytes || !bytes.length) return;
@@ -5064,7 +5040,6 @@ async function startMonitor() {
     }
   }
   if (!monitorAutoResetPerformed) {
-    await releaseTransportReader();
     appendLog('Auto-resetting board before starting serial monitor output.', '[ESPConnect-Debug]');
     await resetBoard({ silent: true });
     monitorAutoResetPerformed = true;
@@ -5102,7 +5077,6 @@ async function stopMonitor(options: StopMonitorOptions = {}) {
   if (!monitorActive.value) return;
   const { closeConnection = false } = options;
   monitorAbortController.value?.abort();
-  await releaseTransportReader();
   monitorActive.value = false;
   monitorAbortController.value = null;
   cancelMonitorFlush();

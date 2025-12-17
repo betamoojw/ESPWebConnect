@@ -108,8 +108,7 @@ class CompatibleTransport {
   tracing: boolean;
   private _reader: any;
   private readonly virtualReader = {
-    cancel: async () => { },
-    releaseLock: () => { },
+
   };
   private readonly getLoader: () => CompatibleLoader | null;
   private readonly isBusy: BusyGetter;
