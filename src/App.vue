@@ -5101,19 +5101,19 @@ async function stopMonitor(options: StopMonitorOptions = {}) {
 // Pulse RTS/DTR to reset the target board.
 async function resetBoard(options: ResetOptions = {}) {
   const { silent = false } = options;
-  const transportInstance = transport.value;
-  if (!transportInstance) {
-    appendLog('Cannot reset: transport not available.', '[ESPConnect-Warn]');
+  const currentLoader = loader.value;
+  if (!currentLoader) {
+    appendLog('Cannot reset: loader not available.', '[ESPConnect-Warn]');
     return;
   }
   try {
     if (!silent) {
       appendLog('Resetting board (toggle RTS).', '[ESPConnect-Debug]');
     }
-    await transportInstance.setDTR(false);
-    await transportInstance.setRTS(true);
-    await loader.value?.sleep?.(120);
-    await transportInstance.setRTS(false);
+    await currentLoader.setDTR(false);
+    await currentLoader.setRTS(true);
+    await currentLoader.sleep(120);
+    await currentLoader.setRTS(false);
   } catch (err) {
     appendLog(`Board reset failed: ${err?.message || err}`, '[error]');
   }
