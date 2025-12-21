@@ -679,6 +679,7 @@ import { FACT_GROUP_CONFIG, FACT_ICONS } from './constants/deviceFacts';
 import { findChipDocs } from './constants/chipDocsLinks';
 import { PWM_TABLE } from './utils/pwm-capabilities-table';
 import { parseNvsPartition, type NvsParseResult } from './lib/nvs/nvsParser';
+import type { AppPartitionMetadata } from './types/app-partitions';
 
 let littlefsModulePromise = null;
 let fatfsModulePromise = null;
@@ -3613,7 +3614,7 @@ const flashReadOffset = ref('0x0');
 const flashReadLength = ref('');
 const flashReadStatus = ref(null);
 const flashReadStatusType = ref('info');
-const appPartitions = ref([]);
+const appPartitions = ref<AppPartitionMetadata[]>([]);
 const appMetadataLoading = ref(false);
 const appMetadataError = ref(null);
 const activeAppSlotId = ref(null);

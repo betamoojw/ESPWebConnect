@@ -106,28 +106,7 @@
 </template>
 
 <script setup lang="ts">
-type AppPartitionMetadata = {
-  key: string;
-  label: string;
-  slotLabel: string;
-  offset: number;
-  offsetHex: string;
-  size: number;
-  sizeText: string;
-  valid: boolean;
-  isActive: boolean;
-  entryAddress: number | null;
-  entryAddressHex: string | null;
-  segmentCount: number | null;
-  projectName: string | null;
-  version: string | null;
-  built: string | null;
-  buildDate: string | null;
-  buildTime: string | null;
-  idfVersion: string | null;
-  descriptorFound: boolean;
-  error: string | null;
-};
+import type { AppPartitionMetadata } from '../types/app-partitions';
 
 withDefaults(
   defineProps<{
