@@ -1,6 +1,7 @@
 # Changelog
 
-## 1.1.1-preview
+## 1.1.2-preview
+## 1.1.1
 
 ### Fixed
 - LittleFS uploads now use `client.getUsage()`
