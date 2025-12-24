@@ -341,29 +341,6 @@ export function createEsptoolClient({
     }
   }
 
-  async function readPartitionTable(offset = 0x8000, length = 0x400) {
-    const data = await loader.readFlash(offset, length);
-    const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
-    const decoder = new TextDecoder();
-    const entries = [];
-    for (let i = 0; i + 32 <= data.length; i += 32) {
-      const magic = view.getUint16(i, true);
-      if (magic === 0xffff || magic === 0x0000) break;
-      if (magic !== 0x50aa) continue;
-      const type = view.getUint8(i + 2);
-      const subtype = view.getUint8(i + 3);
-      const addr = view.getUint32(i + 4, true);
-      const size = view.getUint32(i + 8, true);
-      const labelBytes = data.subarray(i + 12, i + 28);
-      const label = decoder
-        .decode(labelBytes)
-        .replace(/\0/g, '')
-        .trim();
-      entries.push({ label: label || `type 0x${type.toString(16)}`, type, subtype, offset: addr, size });
-    }
-    return entries;
-  }
-
   async function readChipMetadata(): Promise<ChipMetadata> {
     setBusy(true);
     try {
