@@ -27,27 +27,20 @@ function readStoredLocale(): SupportedLocale {
 
 const locale = readStoredLocale();
 
-export const baseMessages = {
-  en,
-  zh,
-};
-
-const mergedMessages = {
-  en: {
-    ...en,
-    $vuetify: vuetifyEn,
-  },
-  zh: {
-    ...zh,
-    $vuetify: vuetifyZhHans,
-  },
-};
-
 export const i18n = createI18n({
   legacy: false,
-  locale,
+  locale: locale as string,
   fallbackLocale: 'en',
-  messages: mergedMessages,
+  messages: {
+    en: {
+      ...en,
+      $vuetify: vuetifyEn,
+    },
+    zh: {
+      ...zh,
+      $vuetify: vuetifyZhHans,
+    },
+  },
 });
 
 export function getLanguage(): SupportedLocale {
