@@ -230,6 +230,7 @@
       restore: 'Restore Image',
       format: 'Format',
       save: 'Save to Flash',
+      newFolder: 'New Folder',
     },
     backupReminder:
       'Download a backup image first (use the "{backup}" button once per session). "{save}" becomes available after any successful backup made during this connection.',
@@ -244,6 +245,7 @@
       selectFile: 'Select file',
       uploadButton: 'Upload',
       dropHint: 'Drop files to add',
+      dropHintFolder: 'Drop files or a folder to add',
     },
     filter: {
       search: 'Filter files',
@@ -257,6 +259,7 @@
     },
     pagination: {
       all: 'All',
+      itemsPerPage: 'Items per page:',
     },
     fileCategory: {
       all: 'All types',
@@ -274,6 +277,13 @@
     loadCancelled: '{fs} load cancelled. {action} to fetch the partition again.',
     readOnly: '{fs} is in read-only mode. {detail}',
     readOnlyDetail: 'Changes cannot be saved.',
+    versionLabel: 'LittleFS v{version}',
+    dialog: {
+      newFolderTitle: 'New Folder',
+      folderName: 'Folder name',
+      cancel: 'Cancel',
+      create: 'Create',
+    },
     preview: {
       listen: 'Listen',
       view: 'View',

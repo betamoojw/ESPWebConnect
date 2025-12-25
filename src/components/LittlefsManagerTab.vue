@@ -12,73 +12,81 @@
         <span class="font-weight-black">{{ partitionHeading }}</span>
       </template>
       <v-card-text class="d-flex flex-column gap-4">
-        <v-select :items="partitions" item-title="label" item-value="id" density="comfortable" label="Partition name"
+        <v-select :items="partitions" item-title="label" item-value="id" density="comfortable"
+          :label="t('filesystem.partitionSelectLabel')"
           :model-value="selectedPartitionId" :disabled="loading || busy || saving || !partitions.length"
           @update:model-value="value => emit('select-partition', value)" />
         <div class="filesystem-manager__controls">
           <v-btn color="primary" variant="tonal" :disabled="!hasPartition || loading || busy || saving"
             @click="emit('refresh')">
             <v-icon start>mdi-refresh</v-icon>
-            Read
+            {{ t('filesystem.controls.read') }}
           </v-btn>
           <v-btn color="secondary" variant="outlined" :disabled="!hasPartition || loading || busy || saving"
             @click="emit('backup')">
             <v-icon start>mdi-content-save</v-icon>
-            Backup
+            {{ t('filesystem.controls.backup') }}
           </v-btn>
           <v-btn color="secondary" variant="text" :disabled="!hasPartition || loading || busy || saving"
             @click="triggerRestore">
             <v-icon start>mdi-upload</v-icon>
-            Restore Image
+            {{ t('filesystem.controls.restore') }}
           </v-btn>
           <v-btn color="error" variant="text"
             :disabled="readOnly || !hasClient || loading || busy || saving || !backupDone" @click="emit('format')">
             <v-icon start>mdi-delete-sweep</v-icon>
-            Format
+            {{ t('filesystem.controls.format') }}
           </v-btn>
           <v-spacer />
           <v-btn color="primary" variant="elevated"
             :disabled="readOnly || !dirty || !backupDone || saving || loading || busy || !hasClient"
             @click="emit('save')">
             <v-icon start>mdi-content-save-outline</v-icon>
-            Save to Flash
+            {{ t('filesystem.controls.save') }}
           </v-btn>
         </div>
         <v-alert v-if="!backupDone" type="warning" variant="tonal" density="comfortable" border="start" class="mt-2">
-          Download a backup image first (use the "Backup" button once per session). "Save to Flash"
-          becomes available after any successful backup made during this connection.
+          {{ t('filesystem.backupReminder', {
+            backup: t('filesystem.controls.backup'),
+            save: t('filesystem.controls.save'),
+          }) }}
         </v-alert>
         <p class="text-caption text-medium-emphasis mb-0">
-          Changes are staged locally until you click "Save to Flash". A recent backup ensures you can
-          recover if something goes wrong.
+          {{ t('filesystem.saveHint', { save: t('filesystem.controls.save') }) }}
         </p>
       </v-card-text>
     </v-card>
 
     <v-alert v-if="showLoadCancelledBanner" type="warning" variant="tonal" density="comfortable" border="start"
       class="filesystem-load-cancelled">
-      {{ loadCancelledMessage }}
+      {{ loadCancelledMessageText }}
     </v-alert>
 
     <v-card v-else :variant="dragActive ? 'outlined' : 'tonal'">
       <v-card-title class="d-flex align-center justify-space-between">
-        <span>Files</span>
+        <span>{{ t('filesystem.filesTitle') }}</span>
         <v-chip v-if="dirty" color="warning" size="large" variant="tonal">
-          Unsaved changes
+          {{ t('filesystem.unsavedChanges') }}
         </v-chip>
       </v-card-title>
       <v-card-text>
         <div v-if="usage?.capacityBytes" class="filesystem-usage">
           <div class="d-flex justify-space-between align-center">
-            <span>Used {{ usagePercent }}% ({{ formatSize(usage.usedBytes) }} / {{ formatSize(usage.capacityBytes) }})</span>
+            <span>
+              {{ t('filesystem.usage.used', {
+                percent: usagePercent,
+                used: formatSize(usage.usedBytes),
+                capacity: formatSize(usage.capacityBytes),
+              }) }}
+            </span>
             <v-chip v-if="diskVersion" size="small" variant="outlined" color="info" class="ml-2">
               <v-icon start size="small">mdi-information-outline</v-icon>
-              LittleFS v{{ diskVersionLabel }}
+              {{ t('filesystem.versionLabel', { version: diskVersionLabel }) }}
             </v-chip>
           </div>
           <v-progress-linear :model-value="usagePercent" height="15" rounded color="primary" />
           <div class="text-caption text-medium-emphasis">
-            Free {{ formatSize(usage.freeBytes) }}
+            {{ t('filesystem.usage.free', { free: formatSize(usage.freeBytes) }) }}
           </div>
         </div>
 
@@ -99,7 +107,7 @@
           <v-btn color="secondary" variant="tonal" size="small"
             :disabled="readOnly || !hasClient || loading || busy || saving" @click="promptNewFolder">
             <v-icon start>mdi-folder-plus</v-icon>
-            New Folder
+            {{ t('filesystem.controls.newFolder') }}
           </v-btn>
         </div>
 
@@ -107,7 +115,8 @@
           <v-row>
             <v-col>
               <div>
-                <v-file-input v-model="uploadFile" density="comfortable" accept="*/*" label="Select file"
+                <v-file-input v-model="uploadFile" density="comfortable" accept="*/*"
+                  :label="t('filesystem.upload.selectFile')"
                   prepend-icon="mdi-file-upload" class="upload-picker"
                   :disabled="readOnly || !hasClient || loading || busy || saving" />
               </div>
@@ -118,18 +127,18 @@
                   :disabled="readOnly || !uploadFile || !hasClient || loading || busy || saving || uploadBlocked"
                   @click="submitUpload">
                   <v-icon start>mdi-upload</v-icon>
-                  Upload
+                  {{ t('filesystem.upload.uploadButton') }}
                 </v-btn>
               </div>
             </v-col>
             <v-col>
               <div @dragover.prevent="handleDragOver" @dragleave.prevent="handleDragLeave" @drop.prevent="handleDrop">
-                <div class="filesystem-dropzone__hint">
-                  <v-icon size="32">mdi-cloud-upload-outline</v-icon>
-                  <div class="filesystem-dropzone__hint-text">
-                    <strong>Drop files or a folder to add</strong>
+                  <div class="filesystem-dropzone__hint">
+                    <v-icon size="32">mdi-cloud-upload-outline</v-icon>
+                    <div class="filesystem-dropzone__hint-text">
+                      <strong>{{ t('filesystem.upload.dropHintFolder') }}</strong>
+                    </div>
                   </div>
-                </div>
               </div>
             </v-col>
           </v-row>
@@ -137,11 +146,11 @@
 
         <v-divider :thickness="2" class="mt-3"></v-divider>
         <div v-if="files.length" class="filesystem-table__toolbar mt-4">
-          <v-text-field v-model="fileSearch" label="Filter files" variant="outlined" density="comfortable" clearable
+          <v-text-field v-model="fileSearch" :label="t('filesystem.filter.search')" variant="outlined" density="comfortable" clearable
             hide-details prepend-inner-icon="mdi-magnify"
             class="filesystem-table__filter filesystem-table__filter--search" />
           <v-select v-model="fileTypeFilter" :items="fileFilterOptions" item-title="label" item-value="value"
-            label="File type" density="comfortable" hide-details variant="outlined"
+            :label="t('filesystem.filter.type')" density="comfortable" hide-details variant="outlined"
             class="filesystem-table__filter filesystem-table__filter--type" />
           <v-spacer />
           <v-chip v-if="files.length" color="primary" size="small" variant="outlined">
@@ -174,11 +183,11 @@
                 <v-icon size="18">{{ previewIcon(item.name) }}</v-icon>
               </v-btn>
               <v-btn v-if="item.type === 'file'" icon variant="text" size="small"
-                :aria-label="`Download ${item.name}`" @click="emit('download-file', item.path)">
+                :aria-label="t('filesystem.actions.download', { file: item.name })" @click="emit('download-file', item.path)">
                 <v-icon size="18">mdi-download</v-icon>
               </v-btn>
               <v-btn icon variant="text" size="small"
-                :aria-label="`Delete ${item.name}`" @click="emit('delete-file', item.path)">
+                :aria-label="t('filesystem.actions.delete', { file: item.name })" @click="emit('delete-file', item.path)">
                 <v-icon size="18">mdi-delete</v-icon>
               </v-btn>
             </div>
@@ -187,16 +196,18 @@
             <div class="d-flex align-center justify-space-between pa-3">
               <div class="text-caption text-medium-emphasis">
                 <template v-if="filteredFiles.length">
-                  {{ filteredFiles.length === files.length ? fileCountLabel : `${filteredFiles.length} of ${files.length} files` }}
+                  {{ fileCountLabel }}
                 </template>
                 <template v-else>
-                  <v-alert type="warning" variant="tonal" border="start"> No files match the current filter</v-alert>
+                  <v-alert type="warning" variant="tonal" border="start">
+                    {{ t('filesystem.noMatches') }}
+                  </v-alert>
                 </template>
               </div>
               <div class="d-flex align-center gap-2">
                 <v-select v-model="filesPerPage" :items="filesPerPageOptions" density="compact" hide-details
                   style="max-width: 140px" />
-                <span class="text-caption text-medium-emphasis">Items per page:</span>
+                <span class="text-caption text-medium-emphasis">{{ t('filesystem.pagination.itemsPerPage') }}</span>
               </div>
             </div>
           </template>
@@ -210,16 +221,16 @@
       <v-card>
         <v-card-title class="text-h6">
           <v-icon start>mdi-folder-plus</v-icon>
-          New Folder
+          {{ t('filesystem.dialog.newFolderTitle') }}
         </v-card-title>
         <v-card-text>
-          <v-text-field v-model="newFolderName" label="Folder name" autofocus clearable />
+          <v-text-field v-model="newFolderName" :label="t('filesystem.dialog.folderName')" autofocus clearable />
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" @click="newFolderDialog = false">Cancel</v-btn>
+          <v-btn variant="text" @click="newFolderDialog = false">{{ t('filesystem.dialog.cancel') }}</v-btn>
           <v-btn color="primary" variant="tonal" :disabled="!newFolderName?.trim()" @click="confirmNewFolder">
-            Create
+            {{ t('filesystem.dialog.create') }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -229,6 +240,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { DataTableHeader } from 'vuetify';
 import type {
   FilePreviewInfo,
@@ -329,6 +341,8 @@ const emit = defineEmits<{
   (e: 'reset-upload-block'): void;
 }>();
 
+const { t } = useI18n();
+
 const uploadFile = ref<File | null>(null);
 const restoreInput = ref<HTMLInputElement | null>(null);
 const fileSearch = ref('');
@@ -338,30 +352,56 @@ const fileTypeFilter = ref<FileCategory>('all');
 const dragActive = ref(false);
 const dropQueue = ref<LittlefsUploadPayload[]>([]);
 
-const headers = Object.freeze<DataTableHeader[]>([
-  { title: 'Name', key: 'name', sortable: true, align: 'start' },
-  { title: 'Size', key: 'size', sortable: true, align: 'start' },
-  { title: 'Actions', key: 'actions', sortable: false, align: 'end' },
+const headers = computed<DataTableHeader[]>(() => [
+  { title: t('filesystem.table.name'), key: 'name', sortable: true, align: 'start' },
+  { title: t('filesystem.table.size'), key: 'size', sortable: true, align: 'start' },
+  { title: t('filesystem.table.actions'), key: 'actions', sortable: false, align: 'end' },
 ]);
-const filesPerPageOptions = Object.freeze<Array<number | { value: number; title: string }>>([
+const filesPerPageOptions = computed<Array<number | { value: number; title: string }>>(() => [
   10,
   25,
   50,
-  { value: -1, title: 'All' },
+  { value: -1, title: t('filesystem.pagination.all') },
 ]);
-const FILE_CATEGORY_LABELS: Record<FileCategory, string> = {
-  all: 'All types',
-  text: 'Text',
-  image: 'Images',
-  audio: 'Audio',
-  other: 'Other',
-};
+const FALLBACK_TEXT_EXT = ['txt', 'log', 'json', 'csv', 'ini', 'cfg', 'conf', 'htm', 'html', 'md', 'xml'];
+const FALLBACK_IMAGE_EXT = ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg'];
+const FALLBACK_AUDIO_EXT = ['mp3', 'wav', 'ogg', 'oga', 'opus', 'm4a', 'aac', 'flac', 'weba', 'webm'];
+const FILE_FILTER_CATEGORIES: Array<Exclude<FileCategory, 'all'>> = ['text', 'image', 'audio', 'other'];
+const getCategoryLabel = (category: FileCategory): string => t(`filesystem.fileCategory.${category}`);
+const fileFilterOptions = computed<FileFilterOption[]>(() => {
+  const counts: Partial<Record<Exclude<FileCategory, 'all'>, number>> = {};
+  for (const file of props.files) {
+    const category = getFileCategory(file.name);
+    counts[category] = (counts[category] ?? 0) + 1;
+  }
 
-const fileFilterOptions = computed<FileFilterOption[]>(() => [
-  { label: `${FILE_CATEGORY_LABELS.all} (${props.files.length})`, value: 'all' },
-]);
+  const options: FileFilterOption[] = [
+    {
+      value: 'all',
+      label: `${getCategoryLabel('all')} (${props.files.length})`,
+    },
+  ];
 
-const partitionHeading = computed(() => props.partitionTitle || `${props.fsLabel} Partition`);
+  for (const category of FILE_FILTER_CATEGORIES) {
+    const count = counts[category] ?? 0;
+    if (count) {
+      options.push({
+        value: category,
+        label: `${getCategoryLabel(category)} (${count})`,
+      });
+    }
+  }
+
+  return options;
+});
+
+const partitionHeading = computed(() => {
+  const sizeLabel = props.partitionTitle?.trim();
+  const base = props.partitionTitle?.trim() || t('filesystem.partitionTitle', { fs: props.fsLabel });
+  return sizeLabel
+    ? t('filesystem.partitionTitleWithSize', { base, size: sizeLabel })
+    : base;
+});
 const hasPartition = computed(() => props.hasPartition);
 const hasClient = computed(() => props.hasClient);
 const atRoot = computed(() => props.currentPath === '/' || props.currentPath === '');
@@ -390,6 +430,13 @@ const selectedPartition = computed<FilesystemPartitionOption | null>(() =>
 );
 
 const showLoadCancelledBanner = computed(() => props.loadCancelled === true);
+const loadCancelledMessageText = computed(() =>
+  props.loadCancelledMessage?.trim() ||
+  t('filesystem.loadCancelled', {
+    fs: props.fsLabel,
+    action: t('filesystem.controls.read'),
+  }),
+);
 
 const filteredFiles = computed(() => {
   const term = fileSearch.value.trim().toLowerCase();
@@ -401,9 +448,10 @@ const filteredFiles = computed(() => {
 
 const fileCountLabel = computed(() => {
   const total = props.files.length;
-  if (!total) return 'No files';
-  const pluralize = (count: number) => (count === 1 ? 'file' : 'files');
-  return `${total} ${pluralize(total)}`;
+  const filtered = filteredFiles.value.length;
+  if (!total) return t('filesystem.filterCount.noFiles');
+  if (filtered === total) return t('filesystem.filterCount.all', { count: total });
+  return t('filesystem.filterCount.partial', { filtered, total });
 });
 
 watch([fileSearch, () => props.files.length], () => {
@@ -416,7 +464,13 @@ watch(uploadFile, file => {
 
 const error = computed(() => props.error || null);
 const readOnly = computed(() => props.readOnly);
-const readOnlyMessage = computed(() => props.readOnlyReason || 'This filesystem is read-only.');
+const readOnlyMessage = computed(() => {
+  const detail = props.readOnlyReason?.trim() || t('filesystem.readOnlyDetail');
+  return t('filesystem.readOnly', {
+    fs: props.fsLabel,
+    detail,
+  });
+});
 const newFolderDialog = ref(false);
 const newFolderName = ref('');
 
@@ -450,6 +504,29 @@ function toPreviewInfo(value: unknown): FilePreviewInfo | null {
   return null;
 }
 
+function normalizeExtension(name = '') {
+  if (typeof name !== 'string') {
+    return '';
+  }
+  const idx = name.lastIndexOf('.');
+  if (idx === -1) {
+    return '';
+  }
+  return name.slice(idx + 1).toLowerCase();
+}
+
+function getFileCategory(name = ''): Exclude<FileCategory, 'all'> {
+  const info = getPreviewInfo(name);
+  if (info?.mode === 'text') return 'text';
+  if (info?.mode === 'image') return 'image';
+  if (info?.mode === 'audio') return 'audio';
+  const ext = normalizeExtension(name);
+  if (FALLBACK_TEXT_EXT.includes(ext)) return 'text';
+  if (FALLBACK_IMAGE_EXT.includes(ext)) return 'image';
+  if (FALLBACK_AUDIO_EXT.includes(ext)) return 'audio';
+  return 'other';
+}
+
 function getPreviewInfo(name?: string): FilePreviewInfo | null {
   if (!name) {
     return null;
@@ -481,9 +558,9 @@ function previewIcon(name?: string): string {
 function previewLabel(name?: string): string {
   const info = getPreviewInfo(name);
   if (info?.mode === 'audio') {
-    return 'Listen';
+    return t('filesystem.preview.listen');
   }
-  return 'View';
+  return t('filesystem.preview.view');
 }
 
 function formatSize(bytes: unknown): string {

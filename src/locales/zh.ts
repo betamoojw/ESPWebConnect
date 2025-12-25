@@ -230,6 +230,7 @@
       restore: '恢复镜像',
       format: '格式化',
       save: '保存到闪存',
+      newFolder: '新建文件夹',
     },
     backupReminder:
       '请先下载备份镜像（本会话使用“{backup}”按钮一次）。成功备份后，“{save}”按钮才可用。',
@@ -244,6 +245,7 @@
       selectFile: '选择文件',
       uploadButton: '上传',
       dropHint: '拖放文件以添加',
+      dropHintFolder: '拖放文件或文件夹以添加',
     },
     filter: {
       search: '筛选文件',
@@ -257,6 +259,7 @@
     },
     pagination: {
       all: '全部',
+      itemsPerPage: '每页条目数：',
     },
     fileCategory: {
       all: '所有类型',
@@ -274,6 +277,13 @@
     loadCancelled: '{fs} 加载已取消。使用“{action}”重新获取分区。',
     readOnly: '{fs} 处于只读模式。{detail}',
     readOnlyDetail: '无法保存更改。',
+    versionLabel: 'LittleFS v{version}',
+    dialog: {
+      newFolderTitle: '新建文件夹',
+      folderName: '文件夹名称',
+      cancel: '取消',
+      create: '创建',
+    },
     preview: {
       listen: '收听',
       view: '查看',
