@@ -25,7 +25,8 @@
             variant="tonal"
             size="small"
             prepend-icon="mdi-play-circle"
-            :disabled="monitorActive || !canStart"
+            :disabled="monitorActive || !canStart || monitorStarting"
+            :loading="monitorStarting"
             @click="emit('start-monitor')"
           >
             {{ t('serialMonitor.actions.start') }}
@@ -131,6 +132,7 @@ const props = withDefaults(defineProps<SerialMonitorTabProps>(), {
   monitorError: null,
   canStart: false,
   canCommand: false,
+  monitorStarting: false,
 });
 
   const emit = defineEmits<SerialMonitorTabEmits>();

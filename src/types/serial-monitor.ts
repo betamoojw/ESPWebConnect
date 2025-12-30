@@ -6,6 +6,7 @@ export type SerialMonitorTabProps = {
   monitorError?: SerialMonitorError;
   canStart?: boolean;
   canCommand?: boolean;
+  monitorStarting?: boolean;
 };
 
 export type SerialMonitorTabEmits = {

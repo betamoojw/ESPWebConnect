@@ -2,6 +2,7 @@
 
 ## 1.1.4-preview
 ### Improvement
+- Serial monitor start button now shows a loading indicator while the monitor is being initialized
 - Delay removed for the connection dialog
 
 ## 1.1.3

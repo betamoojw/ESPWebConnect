@@ -219,9 +219,9 @@
             </v-window-item>
             <v-window-item value="console">
               <SerialMonitorTab :monitor-text="monitorText" :monitor-active="monitorActive"
-                :monitor-error="monitorError" :can-start="canStartMonitor" :can-command="canIssueMonitorCommands"
-                @start-monitor="startMonitor" @stop-monitor="stopMonitor()" @clear-monitor="clearMonitorOutput"
-                @reset-board="enterUserFirmware" />
+                :monitor-error="monitorError" :monitor-starting="monitorStarting" :can-start="canStartMonitor"
+                :can-command="canIssueMonitorCommands" @start-monitor="startMonitor" @stop-monitor="stopMonitor()"
+                @clear-monitor="clearMonitorOutput" @reset-board="enterUserFirmware" />
             </v-window-item>
 
             <v-window-item value="log">
@@ -3898,6 +3898,7 @@ const logBuffer = ref('');
 const monitorText = ref<string>('');
 const monitorActive = ref<boolean>(false);
 const monitorError = ref<SerialMonitorError>(null);
+const monitorStarting = ref<boolean>(false);
 const monitorAbortController = ref<AbortController | null>(null);
 const serialMonitorClosedPrompt = ref(false);
 const maintenanceReturnInProgress = ref(false);
@@ -5416,13 +5417,22 @@ async function monitorLoop(signal: AbortSignal) {
 
 // Kick off the serial monitor and adjust baud if needed.
 async function startMonitor() {
-  if (!canStartMonitor.value || monitorActive.value) {
+  if (!canStartMonitor.value || monitorActive.value || monitorStarting.value) {
     return;
   }
   if (!transport.value) {
     appendLog('Monitor unavailable: transport not ready.', '[ESPConnect-Warn]');
     return;
   }
+  monitorStarting.value = true;
+  try {
+    await startMonitorFlow();
+  } finally {
+    monitorStarting.value = false;
+  }
+}
+
+async function startMonitorFlow() {
   previousMonitorBaud.value = currentBaud.value || lastFlashBaud.value || DEFAULT_FLASH_BAUD;
   if (currentBaud.value !== MONITOR_BAUD) {
     try {
