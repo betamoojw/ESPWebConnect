@@ -1,6 +1,8 @@
 # Changelog
 
 ## 1.1.4-preview
+### Improvement
+- Delay removed for the connection dialog
 
 ## 1.1.3
 ### Improvement
