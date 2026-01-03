@@ -1,5 +1,11 @@
 import { test, expect, type Page } from '@playwright/test';
 
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem('espconnect-language', 'en');
+  });
+});
+
 async function connectHappyPath(page: Page) {
   await page.goto('/?e2e=1');
   const connectButton = page.getByTestId('connect-btn');
