@@ -33,8 +33,8 @@
           <v-icon start>mdi-usb-flash-drive</v-icon>
           {{ t('actions.connect') }}
         </v-btn>
-        <v-btn color="error" variant="outlined" density="comfortable" :disabled="!connected || busy"
-          @click="disconnect" data-testid="disconnect-btn">
+        <v-btn color="error" variant="outlined" density="comfortable" :disabled="!connected || busy" @click="disconnect"
+          data-testid="disconnect-btn">
           <v-icon start>mdi-close-circle</v-icon>
           {{ t('actions.disconnect') }}
         </v-btn>
@@ -174,17 +174,15 @@
                 :load-cancelled-message="t('filesystem.loadCancelled', {
                   fs: 'FATFS',
                   action: t('filesystem.controls.read'),
-                })"
-                fs-label="FATFS" partition-title="FATFS Partition"
+                })" fs-label="FATFS" partition-title="FATFS Partition"
                 empty-state-message="No FATFS files found. Read the partition or upload to begin."
                 :is-file-viewable="isViewableSpiffsFile" :get-file-preview-info="resolveSpiffsViewInfo"
-                @select-partition="handleSelectFatfsPartition" @refresh="handleRefreshFatfs"
-                @backup="handleFatfsBackup" @restore="handleFatfsRestore"
-                @download-file="handleFatfsDownloadFile" @view-file="handleFatfsView"
+                @select-partition="handleSelectFatfsPartition" @refresh="handleRefreshFatfs" @backup="handleFatfsBackup"
+                @restore="handleFatfsRestore" @download-file="handleFatfsDownloadFile" @view-file="handleFatfsView"
                 @validate-upload="handleFatfsUploadSelection" @upload-file="handleFatfsUpload"
                 @delete-file="handleFatfsDelete" @format="handleFatfsFormat" @save="handleFatfsSave"
-                @navigate="handleFatfsNavigate" @navigate-up="handleFatfsNavigateUp"
-                @new-folder="handleFatfsNewFolder" @reset-upload-block="handleFatfsResetUploadBlock" />
+                @navigate="handleFatfsNavigate" @navigate-up="handleFatfsNavigateUp" @new-folder="handleFatfsNewFolder"
+                @reset-upload-block="handleFatfsResetUploadBlock" />
               <DisconnectedState v-else icon="mdi-alpha-f-circle-outline" :min-height="420"
                 :title="t('disconnected.defaultTitle')" :subtitle="t('disconnected.fatfs')" />
             </v-window-item>
@@ -4653,15 +4651,15 @@ async function analyzeAppPartitions(loaderInstance: ESPLoader, partitions: Parti
   let activeSlotId: string | null = null;
   let activeSummary: string | null = null;
   let otadataSelectionUnavailable = false;
+  let activeSlotFromOtadata = false;
+
   const otadataEntry = partitions.find(entry => entry.type === 0x01 && entry.subtype === 0x02);
   if (otadataEntry && otaEntries.length) {
     try {
       const maxSectors = Math.min(2, Math.max(1, otaEntries.length));
-      const desiredLength = OTA_DATA_SECTOR_BYTES * maxSectors;
-      const primaryBlock = await loaderInstance.readFlash(
-        otadataEntry.offset,
-        Math.min(desiredLength, Math.max(otadataEntry.size ?? 0, OTA_SELECT_ENTRY_SIZE)),
-      );
+      const desiredLength = OTA_DATA_SECTOR_BYTES * 2; // 0x2000
+      const primaryBlock = await loaderInstance.readFlash(otadataEntry.offset, desiredLength);
+
 
       const otadataChunks: Uint8Array[] = [];
       otadataChunks.push(primaryBlock.subarray(0, OTA_SELECT_ENTRY_SIZE));
@@ -4683,17 +4681,26 @@ async function analyzeAppPartitions(loaderInstance: ESPLoader, partitions: Parti
         }
       }
 
-      const combinedOtadata = new Uint8Array(Math.max(otadataChunks.length, 1) * OTA_SELECT_ENTRY_SIZE);
-      otadataChunks.forEach((chunk, index) => {
-        combinedOtadata.set(chunk.subarray(0, OTA_SELECT_ENTRY_SIZE), index * OTA_SELECT_ENTRY_SIZE);
-      });
+      const sectorCount = 2; // ESP-IDF uses 2 sectors for otadata
+      const combinedOtadata = new Uint8Array(OTA_DATA_SECTOR_BYTES * sectorCount); // 0x2000
+
+      // Copy the first entry header to 0x0000
+      combinedOtadata.set(otadataChunks[0].subarray(0, OTA_SELECT_ENTRY_SIZE), 0x0000);
+
+      // Copy the mirrored entry header to 0x1000 if present
+      if (otadataChunks.length > 1) {
+        combinedOtadata.set(otadataChunks[1].subarray(0, OTA_SELECT_ENTRY_SIZE), 0x1000);
+      }
 
       const detected = detectActiveOtaSlot(combinedOtadata, otaEntries);
+
       if (detected.slotId) {
         activeSlotId = detected.slotId;
+        activeSlotFromOtadata = true;
       } else if (detected.summary === 'No valid OTA selection found') {
         otadataSelectionUnavailable = true;
       }
+
       activeSummary = detected.summary;
     } catch (error) {
       appendLog('Failed to read OTA data partition', error);
@@ -4777,7 +4784,8 @@ async function analyzeAppPartitions(loaderInstance: ESPLoader, partitions: Parti
     }
 
     if (buffer[0] !== APP_IMAGE_HEADER_MAGIC) {
-      appInfo.error = 'Encrypted or invalid image header.';
+      appInfo.valid = true; // partition exists; metadata just not readable
+      appInfo.error = 'Image header unreadable (likely flash-encrypted).';
       results.push(appInfo);
       continue;
     }
@@ -4811,7 +4819,11 @@ async function analyzeAppPartitions(loaderInstance: ESPLoader, partitions: Parti
   let resolvedSummary = activeSummary;
   const activeInfoCandidate = resolvedSlotId ? results.find(info => info.slotLabel === resolvedSlotId) ?? null : null;
 
-  if (!otadataSelectionUnavailable && (!activeInfoCandidate || !activeInfoCandidate.valid)) {
+  if (
+    !otadataSelectionUnavailable &&
+    !activeSlotFromOtadata &&
+    (!activeInfoCandidate || !activeInfoCandidate.valid)
+  ) {
     const fallbackCandidates = [
       results.find(info => info.valid && info.slotLabel === 'factory'),
       results.find(info => info.valid && info.slotLabel.startsWith('ota_')),
@@ -4828,6 +4840,16 @@ async function analyzeAppPartitions(loaderInstance: ESPLoader, partitions: Parti
       resolvedSlotId = null;
       resolvedSummary = 'Active slot invalid.';
     }
+  } else if (
+    !otadataSelectionUnavailable &&
+    !activeSlotFromOtadata &&
+    (!activeInfoCandidate || !activeInfoCandidate.valid)
+  ) {
+    // existing fallback logic unchanged...
+  } else if (activeSlotFromOtadata && activeInfoCandidate && !activeInfoCandidate.valid) {
+    resolvedSummary =
+      `Active slot from otadata: ${activeInfoCandidate.slotLabel}. ` +
+      `Image metadata unavailable (encrypted or unreadable header).`;
   } else if (otadataSelectionUnavailable) {
     resolvedSlotId = null;
     resolvedSummary = activeSummary;
